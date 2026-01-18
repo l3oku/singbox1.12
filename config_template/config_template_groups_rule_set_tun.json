@@ -761,7 +761,7 @@
                 "download_detour": "🎯 中国直连"
             },
             {
-                "tag": "geosite-",
+                "tag": "geosite-microsoft",
                 "type": "remote",
                 "format": "binary",
                 "url": "https://v6.gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo-lite/geosite/microsoft.srs",
