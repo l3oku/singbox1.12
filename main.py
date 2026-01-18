@@ -5,7 +5,6 @@ from urllib.parse import urlparse
 from collections import OrderedDict
 from api.app import TEMP_DIR
 from parsers.clash2base64 import clash2v2ray
-from gh_proxy_helper import set_gh_proxy
 
 parsers_mod = {}
 providers = None
@@ -425,13 +424,27 @@ def pro_node_template(data_nodes, config_outbound, group):
 
 def combin_to_config(config, data):
     config_outbounds = config["outbounds"] if config.get("outbounds") else None
+    
+    # [修改] 自动识别主选择组名称（根据包含 {all} 判断）
+    main_proxy_tag = 'Proxy' # 默认兜底
+    if config_outbounds:
+        for out in config_outbounds:
+            if out.get('type') == 'selector' and out.get('outbounds'):
+                # 处理 outbounds 可能是字符串的情况
+                obs = [out["outbounds"]] if isinstance(out["outbounds"], str) else out["outbounds"]
+                if '{all}' in obs:
+                    main_proxy_tag = out['tag']
+                    print(f"自动识别到主选择组名称为: \033[32m{main_proxy_tag}\033[0m")
+                    break
+
     i = 0
     for group in data:
         if 'subgroup' in group:
             i += 1
             for out in config_outbounds:
                 if out.get("outbounds"):
-                    if out['tag'] == 'Proxy':
+                    # [修改] 使用 main_proxy_tag 代替死代码 'Proxy'
+                    if out['tag'] == main_proxy_tag:
                         out["outbounds"] = [out["outbounds"]] if isinstance(out["outbounds"], str) else out["outbounds"]
                         if '{all}' in out["outbounds"]:
                             index_of_all = out["outbounds"].index('{all}')
@@ -444,13 +457,12 @@ def combin_to_config(config, data):
             if 'subgroup' not in group:
                 for out in config_outbounds:
                     if out.get("outbounds"):
-                        if out['tag'] == 'Proxy':
+                        # [修改] 使用 main_proxy_tag 代替死代码 'Proxy'
+                        if out['tag'] == main_proxy_tag:
                             out["outbounds"] = [out["outbounds"]] if isinstance(out["outbounds"], str) else out["outbounds"]
                             out["outbounds"].append('{' + group + '}')
     temp_outbounds = []
     if config_outbounds:
-        # 获取 "type": "direct"的"tag"值
-        direct_item = next((item for item in config_outbounds if item.get('type') == 'direct'), None)
         # 提前处理all模板
         for po in config_outbounds:
             # 处理出站
@@ -487,20 +499,11 @@ def combin_to_config(config, data):
                     else:
                         t_o.append(oo)
                 if len(t_o) == 0:
-                    t_o.append(direct_item['tag'])  # outbound内容为空时 添加直连 direct
-                    print('发现 {} 出站下的节点数量为 0 ，会导致sing-box无法运行，请检查config模板是否正确。'.format(
-                        po['tag']))
-                    # print('Sing-Box không chạy được vì không tìm thấy bất kỳ proxy nào trong outbound của {}. Vui lòng kiểm tra xem mẫu cấu hình có đúng không!!'.format(po['tag']))
-                    """
-                    config_path = json.loads(temp_json_data).get("save_config_path", "config.json")
-                    CONFIG_FILE_NAME = config_path
-                    config_file_path = os.path.join('/tmp', CONFIG_FILE_NAME)
-                    if os.path.exists(config_file_path):
-                        os.remove(config_file_path)
-                        print(f"已删除文件：{config_file_path}")
-                        # print(f"Các tập tin đã bị xóa: {config_file_path}")
-                    sys.exit()
-                    """
+                    # [修改] 这里是核心保底逻辑！空组自动加入 main_proxy_tag
+                    t_o.append(main_proxy_tag)
+                    print('发现 {} 出站下的节点数量为 0 ，已自动添加 [{}] 作为保底，防止报错。'.format(
+                        po['tag'], main_proxy_tag))
+                    
                 po['outbounds'] = t_o
                 if po.get('filter'):
                     del po['filter']
@@ -580,10 +583,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--temp_json_data', type=parse_json, help='临时内容')
     parser.add_argument('--template_index', type=int, help='模板序号')
-    parser.add_argument('--gh_proxy_index', type=str, help='github加速链接')
     args = parser.parse_args()
     temp_json_data = args.temp_json_data
-    gh_proxy_index = args.gh_proxy_index
     if temp_json_data and temp_json_data != '{}':
         providers = json.loads(temp_json_data)
     else:
@@ -608,17 +609,6 @@ if __name__ == '__main__':
         # print ('Mẫu cấu hình sử dụng: \033[33m' + template_list[uip] + '.json\033[0m')
         config = load_json(config_template_path)
     nodes = process_subscribes(providers["subscribes"])
-
-    # 处理github加速
-    if hasattr(args, 'gh_proxy_index') and str(args.gh_proxy_index).isdigit():
-        gh_proxy_index = int(args.gh_proxy_index)
-        print(gh_proxy_index)
-        urls = [item["url"] for item in config["route"]["rule_set"]]
-        new_urls = set_gh_proxy(urls, gh_proxy_index)
-        for item, new_url in zip(config["route"]["rule_set"], new_urls):
-            item["url"] = new_url
-
-
     if providers.get('Only-nodes'):
         combined_contents = []
         for sub_tag, contents in nodes.items():
