@@ -162,7 +162,7 @@
             "default": "🇺🇸 美国自动"
         },
         {
-            "tag": "📲 Telegram",
+            "tag": "📲 TELEGRAM",
             "type": "selector",
             "interrupt_exist_connections": true,
             "outbounds": [
@@ -194,7 +194,7 @@
             "default": "手动选择"
         },
         {
-            "tag": "🎥 TikTok",
+            "tag": "🎥 TIKTOK",
             "type": "selector",
             "interrupt_exist_connections": true,
             "outbounds": [
@@ -210,7 +210,7 @@
             "default": "🇸🇬 新加坡自动"
         },
         {
-            "tag": "🎵 Spotify",
+            "tag": "🎵 SPOTIFY",
             "type": "selector",
             "interrupt_exist_connections": true,
             "outbounds": [
@@ -226,7 +226,7 @@
             "default": "🇭🇰 香港自动"
         },
         {
-            "tag": "📹 YouTube",
+            "tag": "📹 YOUTUBE",
             "type": "selector",
             "interrupt_exist_connections": true,
             "outbounds": [
@@ -242,7 +242,7 @@
             "default": "手动选择"
         },
         {
-            "tag": "🌵 Line",
+            "tag": "🌵 LINE",
             "type": "selector",
             "interrupt_exist_connections": true,
             "outbounds": [
@@ -258,7 +258,7 @@
             "default": "手动选择"
         },
         {
-            "tag": "🔍 Google",
+            "tag": "🔍 GOOGLE",
             "type": "selector",
             "interrupt_exist_connections": true,
             "outbounds": [
@@ -274,7 +274,7 @@
             "default": "手动选择"
         },
         {
-            "tag": "📖 Microsoft",
+            "tag": "📖 MICROSOFT",
             "type": "selector",
             "interrupt_exist_connections": true,
             "outbounds": [
@@ -290,7 +290,7 @@
             "default": "手动选择"
         },
         {
-            "tag": "🍎 Apple",
+            "tag": "🍎 APPLE",
             "type": "selector",
             "interrupt_exist_connections": true,
             "outbounds": [
@@ -307,7 +307,7 @@
             "default": "🇨🇳 全局直连"
         },
         {
-            "tag": "🎥 Netflix",
+            "tag": "🎥 NETFLIX",
             "type": "selector",
             "interrupt_exist_connections": true,
             "outbounds": [
@@ -354,7 +354,7 @@
             ]
         },
         {
-            "tag": "🔎 HttpDNS",
+            "tag": "🔎 HTTPDNS",
             "type": "selector",
             "interrupt_exist_connections": true,
             "outbounds": [
@@ -603,7 +603,7 @@
                 "rule_set": [
                     "BlockHttpDNS"
                 ],
-                "outbound": "🔎 HttpDNS"
+                "outbound": "🔎 HTTPDNS"
             },
             {
                 "rule_set": [
@@ -613,7 +613,7 @@
                     "geosite-instagram",
                     "geosite-threads"
                 ],
-                "outbound": "🔍 Google"
+                "outbound": "🔍 GOOGLE"
             },
             {
                 "rule_set": "geosite-ai",
@@ -621,19 +621,19 @@
             },
             {
                 "rule_set": "geosite-youtube",
-                "outbound": "📹 YouTube"
+                "outbound": "📹 YOUTUBE"
             },
             {
                 "rule_set": "geosite-spotify",
-                "outbound": "🎵 Spotify"
+                "outbound": "🎵 SPOTIFY"
             },
             {
                 "rule_set": "geosite-tiktok",
-                "outbound": "🎥 TikTok"
+                "outbound": "🎥 TIKTOK"
             },
             {
                 "rule_set": "geosite-line",
-                "outbound": "🌵 Line"
+                "outbound": "🌵 LINE"
             },
             {
                 "rule_set": "geoip-twitter",
@@ -644,27 +644,27 @@
                     "geoip-telegram",
                     "geosite-telegram"
                 ],
-                "outbound": "📲 Telegram"
+                "outbound": "📲 TELEGRAM"
             },
             {
                 "rule_set": [
                     "geoip-netflix",
                     "geosite-netflix"
                 ],
-                "outbound": "🎥 Netflix"
+                "outbound": "🎥 NETFLIX"
             },
             {
                 "rule_set": [
                     "geosite-microsoft"
                 ],
-                "outbound": "📖 Microsoft"
+                "outbound": "📖 MICROSOFT"
             },
             {
                 "rule_set": [
                     "geoip-apple",
                     "geosite-apple"
                 ],
-                "outbound": "🍎 Apple"
+                "outbound": "🍎 APPLE"
             },
             {
                 "rule_set": [
@@ -761,7 +761,7 @@
                 "download_detour": "🎯 中国直连"
             },
             {
-                "tag": "geosite-microsoft",
+                "tag": "geosite-",
                 "type": "remote",
                 "format": "binary",
                 "url": "https://v6.gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo-lite/geosite/microsoft.srs",
