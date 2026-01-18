@@ -583,6 +583,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--temp_json_data', type=parse_json, help='临时内容')
     parser.add_argument('--template_index', type=int, help='模板序号')
+    # [修改] 增加 gh_proxy_index 参数定义，防止报错
+    parser.add_argument('--gh_proxy_index', type=int, help='Github加速')
     args = parser.parse_args()
     temp_json_data = args.temp_json_data
     if temp_json_data and temp_json_data != '{}':
