@@ -376,8 +376,8 @@ def pro_node_template(data_nodes, config_outbound, group):
 def combin_to_config(config, data):
     config_outbounds = config["outbounds"] if config.get("outbounds") else None
     
-    # === [关键] 自动识别主组名称 ===
-    main_proxy_tag = 'Proxy'
+    # === [修改] 自动识别主组名称 ===
+    main_proxy_tag = 'Proxy' # 默认值
     if config_outbounds:
         for out in config_outbounds:
             if out.get('type') == 'selector' and out.get('outbounds'):
@@ -393,7 +393,7 @@ def combin_to_config(config, data):
             i += 1
             for out in config_outbounds:
                 if out.get("outbounds"):
-                    # === [关键] 动态使用主组名称 ===
+                    # === [修改] 使用 main_proxy_tag 代替 'Proxy' ===
                     if out['tag'] == main_proxy_tag:
                         out["outbounds"] = [out["outbounds"]] if isinstance(out["outbounds"], str) else out["outbounds"]
                         if '{all}' in out["outbounds"]:
@@ -407,7 +407,7 @@ def combin_to_config(config, data):
             if 'subgroup' not in group:
                 for out in config_outbounds:
                     if out.get("outbounds"):
-                        # === [关键] 动态使用主组名称 ===
+                        # === [修改] 使用 main_proxy_tag 代替 'Proxy' ===
                         if out['tag'] == main_proxy_tag:
                             out["outbounds"] = [out["outbounds"]] if isinstance(out["outbounds"], str) else out["outbounds"]
                             out["outbounds"].append('{' + group + '}')
@@ -445,7 +445,7 @@ def combin_to_config(config, data):
                     else:
                         t_o.append(oo)
                 if len(t_o) == 0:
-                    # === [关键] 核心保底逻辑：空组自动指向主组 ===
+                    # === [修改] 核心保底：自动添加主组名 ===
                     t_o.append(main_proxy_tag)
                     print('发现 {} 出站下的节点数量为 0 ，已自动添加 [{}] 作为保底。'.format(po['tag'], main_proxy_tag))
                 po['outbounds'] = t_o
@@ -521,10 +521,7 @@ if __name__ == '__main__':
     parser.add_argument('--temp_json_data', type=parse_json, help='临时内容')
     parser.add_argument('--template_index', type=int, help='模板序号')
     
-    # === [关键修复] 添加 gh_proxy_index 参数定义 ===
-    parser.add_argument('--gh_proxy_index', type=int, default=0, help='Github加速')
-    
-    # === [关键修复] 使用 parse_known_args 确保未知参数不报错 ===
+    # === [关键修复] 使用 parse_known_args 忽略所有未知参数（如 --gh_proxy_index） ===
     args, unknown = parser.parse_known_args()
     
     temp_json_data = args.temp_json_data
@@ -548,18 +545,6 @@ if __name__ == '__main__':
         config_template_path = 'config_template/' + template_list[uip] + '.json'
         print('选择: \033[33m' + template_list[uip] + '.json\033[0m')
         config = load_json(config_template_path)
-    
-    # === [新增功能] 自动应用 Github 加速 ===
-    # 只要你有 args.gh_proxy_index，这里就会自动替换 rule_set 里的链接
-    if args.gh_proxy_index is not None and config.get('route') and config['route'].get('rule_set'):
-         for rs in config['route']['rule_set']:
-             if rs.get('url'):
-                 # 调用 tool.set_gh_proxy 进行替换
-                 try:
-                    rs['url'] = tool.set_gh_proxy(rs['url'], args.gh_proxy_index)
-                 except Exception:
-                    pass
-
     nodes = process_subscribes(providers["subscribes"])
     if providers.get('Only-nodes'):
         combined_contents = []
