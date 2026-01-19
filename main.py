@@ -6,6 +6,9 @@ from collections import OrderedDict
 from api.app import TEMP_DIR
 from parsers.clash2base64 import clash2v2ray
 
+# === [关键 1] 导入你的加速文件 ===
+import gh_proxy_helper
+
 parsers_mod = {}
 providers = None
 color_code = [31, 32, 33, 34, 35, 36, 91, 92, 93, 94, 95, 96]
@@ -376,7 +379,7 @@ def pro_node_template(data_nodes, config_outbound, group):
 def combin_to_config(config, data):
     config_outbounds = config["outbounds"] if config.get("outbounds") else None
     
-    # === [关键修复] 自动识别主组名称 ===
+    # === [自动识别主组名称] ===
     main_proxy_tag = 'Proxy'
     if config_outbounds:
         for out in config_outbounds:
@@ -393,7 +396,6 @@ def combin_to_config(config, data):
             i += 1
             for out in config_outbounds:
                 if out.get("outbounds"):
-                    # === [关键修复] 动态使用主组名称 ===
                     if out['tag'] == main_proxy_tag:
                         out["outbounds"] = [out["outbounds"]] if isinstance(out["outbounds"], str) else out["outbounds"]
                         if '{all}' in out["outbounds"]:
@@ -407,7 +409,6 @@ def combin_to_config(config, data):
             if 'subgroup' not in group:
                 for out in config_outbounds:
                     if out.get("outbounds"):
-                        # === [关键修复] 动态使用主组名称 ===
                         if out['tag'] == main_proxy_tag:
                             out["outbounds"] = [out["outbounds"]] if isinstance(out["outbounds"], str) else out["outbounds"]
                             out["outbounds"].append('{' + group + '}')
@@ -445,7 +446,7 @@ def combin_to_config(config, data):
                     else:
                         t_o.append(oo)
                 if len(t_o) == 0:
-                    # === [关键修复] 核心保底逻辑：空组自动指向主组 ===
+                    # === [核心保底] ===
                     t_o.append(main_proxy_tag)
                     print('发现 {} 出站下的节点数量为 0 ，已自动添加 [{}] 作为保底。'.format(po['tag'], main_proxy_tag))
                 po['outbounds'] = t_o
@@ -521,12 +522,20 @@ if __name__ == '__main__':
     parser.add_argument('--temp_json_data', type=parse_json, help='临时内容')
     parser.add_argument('--template_index', type=int, help='模板序号')
     
-    # === [关键修复] 添加 gh_proxy_index 参数定义 ===
-    parser.add_argument('--gh_proxy_index', type=int, default=0, help='Github加速')
+    # === [关键 2] 这里的 type=str 是必须的，防止它自己转空值报错 ===
+    parser.add_argument('--gh_proxy_index', type=str, default="0", help='Github加速')
     
-    # === [关键修复] 使用 parse_known_args 确保未知参数不报错 ===
     args, unknown = parser.parse_known_args()
     
+    # === [关键 3] 手动处理空值，为空就给 0 ===
+    try:
+        if args.gh_proxy_index and str(args.gh_proxy_index).strip():
+             gh_proxy_index_int = int(args.gh_proxy_index)
+        else:
+             gh_proxy_index_int = 0
+    except ValueError:
+        gh_proxy_index_int = 0
+
     temp_json_data = args.temp_json_data
     if temp_json_data and temp_json_data != '{}':
         providers = json.loads(temp_json_data)
@@ -549,14 +558,12 @@ if __name__ == '__main__':
         print('选择: \033[33m' + template_list[uip] + '.json\033[0m')
         config = load_json(config_template_path)
     
-    # === [新增功能] 自动应用 Github 加速 (这里就是调用你那个加速文件的地方) ===
-    # 只要你有 args.gh_proxy_index，这里就会自动替换 rule_set 里的链接
-    if args.gh_proxy_index is not None and config.get('route') and config['route'].get('rule_set'):
+    # === [关键 4] 使用我们手动转换好的 gh_proxy_index_int ===
+    if config.get('route') and config['route'].get('rule_set'):
          for rs in config['route']['rule_set']:
              if rs.get('url'):
-                 # 调用 tool.set_gh_proxy 进行替换
                  try:
-                    rs['url'] = tool.set_gh_proxy(rs['url'], args.gh_proxy_index)
+                    rs['url'] = gh_proxy_helper.set_gh_proxy(rs['url'], gh_proxy_index_int)
                  except Exception:
                     pass
 
