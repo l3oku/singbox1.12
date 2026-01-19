@@ -6,7 +6,7 @@ from collections import OrderedDict
 from api.app import TEMP_DIR
 from parsers.clash2base64 import clash2v2ray
 
-# === [必须导入] 加速辅助文件 ===
+# === [关键 1] 导入你的加速文件 ===
 import gh_proxy_helper
 
 parsers_mod = {}
@@ -522,18 +522,17 @@ if __name__ == '__main__':
     parser.add_argument('--temp_json_data', type=parse_json, help='临时内容')
     parser.add_argument('--template_index', type=int, help='模板序号')
     
-    # === [关键修复] 去掉 type=int，防止空字符串报错 ===
-    parser.add_argument('--gh_proxy_index', default=0, help='Github加速')
+    # === [关键 2] 这里的 type=str 是必须的，防止它自己转空值报错 ===
+    parser.add_argument('--gh_proxy_index', type=str, default="0", help='Github加速')
     
-    # === [关键修复] 使用 parse_known_args ===
     args, unknown = parser.parse_known_args()
     
-    # === [手动处理] 把参数转换成 int，转换失败就默认为 0 ===
+    # === [关键 3] 手动处理空值，为空就给 0 ===
     try:
-        if args.gh_proxy_index == '' or args.gh_proxy_index is None:
-             gh_proxy_index_int = 0
-        else:
+        if args.gh_proxy_index and str(args.gh_proxy_index).strip():
              gh_proxy_index_int = int(args.gh_proxy_index)
+        else:
+             gh_proxy_index_int = 0
     except ValueError:
         gh_proxy_index_int = 0
 
@@ -559,12 +558,11 @@ if __name__ == '__main__':
         print('选择: \033[33m' + template_list[uip] + '.json\033[0m')
         config = load_json(config_template_path)
     
-    # === [应用加速] ===
+    # === [关键 4] 使用我们手动转换好的 gh_proxy_index_int ===
     if config.get('route') and config['route'].get('rule_set'):
          for rs in config['route']['rule_set']:
              if rs.get('url'):
                  try:
-                    # 使用我们手动处理好的 gh_proxy_index_int
                     rs['url'] = gh_proxy_helper.set_gh_proxy(rs['url'], gh_proxy_index_int)
                  except Exception:
                     pass
